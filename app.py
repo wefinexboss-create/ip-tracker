@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 app = Flask(__name__)
 
@@ -20,6 +21,10 @@ def get_client_ip():
     return request.remote_addr
 
 
+def get_vietnam_time():
+    return datetime.now(ZoneInfo("Asia/Ho_Chi_Minh")).strftime("%Y-%m-%d %H:%M:%S")
+
+
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -30,7 +35,7 @@ def track_ip():
     client_info = {
         "ip": get_client_ip(),
         "user_agent": request.headers.get("User-Agent", ""),
-        "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        "time": get_vietnam_time()
     }
 
     clicks.append(client_info)
