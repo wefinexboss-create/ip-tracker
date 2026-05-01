@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý IP</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 30px; border-radius: 15px; }
+        h1 { color: #333; }
+        .link-box { background: #e7f3ff; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .link-box input { width: 70%; padding: 10px; font-size: 16px; }
+        .link-box button { padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; margin-left: 5px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #667eea; color: white; }
+        tr:hover { background: #f9f9f9; }
+        .empty { text-align: center; color: #999; padding: 40px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Quản lý IP Tracker</h1>
+        
+        <div class="link-box">
+            <p><strong>📤 Link để gửi cho người khác:</strong></p>
+            <input type="text" id="track-link" value="" readonly>
+            <button onclick="copyLink()">📋 Sao chép</button>
+            <button onclick="loadData()">🔄 Tải lại</button>
+        </div>
+
+        <h2>Danh sách IP đã click (<span id="count">0</span>):</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>STT</th>
+                    <th>IP</th>
+                    <th>Thời gian</th>
+                    <th>User Agent</th>
+                </tr>
+            </thead>
+            <tbody id="clicks-body">
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        document.getElementById('track-link').value = window.location.origin + '/track';
+        
+        async function loadData() {
+            try {
+                const response = await fetch('/api/clicks');
+                const data = await response.json();
+                
+                document.getElementById('count').textContent = data.length;
+                const tbody = document.getElementById('clicks-body');
+                tbody.innerHTML = '';
+                
+                if (data.length > 0) {
+                    data.reverse().forEach((click, index) => {
+                        const row = `<tr>
+                            <td>${data.length - index}</td>
+                            <td><strong>${click.ip}</strong></td>
+                            <td>${click.time}</td>
+                            <td style="font-size: 11px; color: #666;">${click.user_agent}</td>
+                        </tr>`;
+                        tbody.innerHTML += row;
+                    });
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="4" class="empty">Chưa có ai click vào link</td></tr>';
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+        
+        function copyLink() {
+            const input = document.getElementById('track-link');
+            input.select();
+            document.execCommand('copy');
+            alert('Đã sao chép link!');
+        }
+        
+        loadData();
+        setInterval(loadData, 5000);
+    </script>
+</body>
+</html>
